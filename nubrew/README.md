@@ -28,7 +28,7 @@ Then paste and run the following:
 
 ```nushell
 use . *
-nubrew install nubrew/nubrew --module-root '/'
+nubrew install nubrew/nubrew
 nubrew init # Creates an autoload file which populates the NU_LIB_DIRS during startup
 cd ~
 rm -r $tempbrew
@@ -50,12 +50,50 @@ The preceeding command can be added to your startup config if desired. For insta
 
 ## Usage
 
-In the simplest scenario, Nubrew can install a module with:
+In the simplest scenario, Nubrew can install a package with:
 
 ```nushell
-nubrew install nubrew/sample-module
+nubrew install <github_user>/<github_repo>
 ```
 
+For example, a working sample can be installed via:
+
+```nushell
+nubrew install nubrew/simple-package-example
+```
+
+Once installed, any modules in the root of that package can be imported immediately:
+
+```nushell
+use sample-module
+# => Hello, Module
+```
+
+It is also possible to override the package name:
+
+```nushell
+nubrew install nubrew/simple-package-example mysample
+use sample-module
+# => Hello, Module
+```
+
+Note that the *module* directory does not change - It is defined by the module author in the repository. Only the Nubrew *package* name changes.
+
+### Fully-qualified Git repo
+
+A fully-qualified repo name (including domain) can also be specified:
+
+```nushell
+nubrew install https://github.com/nubrew/simple-package-example mysample
+```
+
+### Specify Branch
+
+If a non-mainline branch of the package is desired, you can use the `--branch` flag:
+
+```nushell
+nubrew install nubrew/nubrew --branch <branch>
+```
 
 
 
