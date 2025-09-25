@@ -1,11 +1,18 @@
-export def "nubrew install" [
-  package_spec_url_or_repo:string
-  --sparse-dir:string = ""
+const nubrew_db = ($nu.data-dir)/nubrew.sqlite3
+const default_package_dir = ($nu.data-dir)/nubrew
+
+export def --env "nubrew install" [
+  repo:string
+  package_name?:string
+  --sparse-options:list = []
   --branch:string = "main"
-  --install-to:directory = "."
-  --fetch-blobs = false
 ] {
-  let install_dir = $install_to
+  let assumed_package_name = ($repo | path parse | get stem)
+  let $package_name = (
+    $package_name
+    | default $assumed_package_name
+  )
+  let package_dir = [ $default_package_dir, $package_name ] | path join
 
   # There are currently three forms that the positional parameter can take:
   # 1. "nushell/nushell":  Use a GitHub repo
@@ -14,24 +21,38 @@ export def "nubrew install" [
   #
   # The third is not yet implemented
   #
-  let repo = if ($package_spec_url_or_repo | str starts-with "http://") {
-    $package_spec_url_or_repo
+  let repo = if ($repo | str starts-with "https://") or ($repo | str starts-with "git@github.com:") {
+    $repo
   } else {
     "https://github.com/"
     | url parse
-    | merge { path: $package_spec_url_or_repo }
+    | merge { path: $repo }
     | url join
   }
 
-  mkdir $install_dir
-  git -C $install_dir init
-  git -C $install_dir remote add origin $repo
-  if $sparse_dir != "" {
-    git -C $install_dir sparse-checkout set --no-cone --sparse-index $sparse_dir
+  git clone --depth=1 --filter=blob:none --no-checkout $repo $package_dir
+  if $sparse_options != [] {
+    git -C $package_dir sparse-checkout set ...$sparse_options
   }
 
-  # TODO: Build a run-external command without the --filter if --fetch-blobs is true
-  git -C $install_dir fetch --depth 1 --filter=blob:none origin $branch
+  git -C $package_dir checkout $branch
 
-  git -C $install_dir checkout $branch
+  $env.NU_LIB_DIRS ++= [ $package_dir ]
+
+  kv set -u -t nubrew_packages $package_name {
+    directory: $package_dir
+    repo: $repo
+  }
+}
+
+def "nubrew init" [] {
+  use std-rfc/str
+
+  r#'
+  
+  '#
+}
+
+export def "nubrew ls" {
+  kv list -u -t nubrew_packages | rename package
 }
