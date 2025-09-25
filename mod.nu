@@ -74,10 +74,11 @@ export def "nubrew init" [] {
   use std-rfc/str
 
   r#'
+    use std-rfc/kv *
     $env.NU_LIB_DIRS ++= (kv list -u -t nubrew_packages | get value | get module-root | flatten | uniq)
   '#
   | str unindent
-  | save -f ($nu.default-config-dir | path join 'autoload/nubrew-set-lib-path.nu')
+  | save -f ($nu.default-config-dir | path join 'autoload/00.nubrew-set-lib-path.nu')
 }
 
 export def "nubrew ls" [] {
