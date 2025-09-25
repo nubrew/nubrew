@@ -2,7 +2,7 @@ use std-rfc/conversions *
 use std-rfc/kv *
 
 const nubrew_db = ($nu.data-dir)/nubrew.sqlite3
-const default_package_dir = ($nu.data-dir)/nubrew
+const default_package_dir = ($nu.data-dir)/nubrew-packages
 
 export def --env "nubrew install" [
   repo:string
