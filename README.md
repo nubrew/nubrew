@@ -27,7 +27,7 @@ cd $tempbrew
 Then paste and run the following:
 
 ```nushell
-use . *
+use ./nubrew *
 nubrew install nubrew/nubrew
 nubrew init # Creates an autoload file which populates the NU_LIB_DIRS during startup
 cd ~
@@ -95,9 +95,67 @@ If a non-mainline branch of the package is desired, you can use the `--branch` f
 nubrew install nubrew/nubrew --branch <branch>
 ```
 
+### Specifying a different module root
 
+Nushell modules can take the form `<directory>/mod.nu`, in which case the `<directory>` becomes the module name to be imported (`use`'d). It can be necessary to
+provide a different "root" (parent) in some cases.
 
+For example, examine [this sample repo](https://github.com/nubrew/module-root-example) and note that the `mod.nu` is in the root directory of the repo. In this case, you can
+specify that the module should be imported directly from the Nubrew packages directory by using the `--module-root` flag:
 
+```nushell
+nubrew install nubrew/module-root-example --module-root='/'
+```
+
+In some cases, you may even want to add multiple module roots. For instance, the [nu_scripts repository](https://github.com/nushell/nu_scripts) includes multiple modules in a mono-repo.
+
+You can specify specific module roots as a list (BUT DON'T - See the next section first):
+
+```nushell
+nubrew install nushell/nu-scripts --module-root [ themes, themes/nu-themes ]
+```
+
+This would make both the theme *module* importable using `use themes`, but it would also add the themes themselves to the library path so you could, for example, `source 3024-day.nu` to load a theme directly.
+
+### Sparse options
+
+But installing the entire `nu_scripts` repo takes a lot of space, and it even includes screenshots of the theme previews. A minimum of around 200MB is required in a normal Git clone, even with `--depth 1`.
+
+This is one of the main drivers behind the design of Nubrew. By using Git sparse checkouts, we can specify *only* the directories we want from the mono-repo, and we can even *exclude* subdirectories (such as the
+theme screenshots) that we don't.
+
+For example, to install the same `themes` module and `nu-themes` as above:
+
+```nushell
+nubrew install nushell/nu_scripts 'nu_scripts-themes' --sparse-options [ '--no-cone', '--sparse-index', 'themes', '!screenshots' ] --module-root [ themes, themes/nu-themes ]
+```
+
+The `--sparse-options` is used to include *only* the `themes` directory, but to *exclude* its screenshots subdirectory.
+
+The resulting package is a much more reasonable 4.6MB on your system.
+
+You can refer to the Git documentation on sparse checkout for more options, but the above example will probably suffice for 
+most use-cases. Keep in mind that you can include and exclude multiple directories from a mono-repository, allowing your 
+package to install multiple modules at one time.
+
+### Updating packages
+
+In theory, a simple `git pull` inside the package directory will update to the latest and greatest. As a future feature,
+`nubrew update <package>` may run this automatically.
+
+### Removing packages
+
+1. Delete the package directory found under `($nu.data-dir)/nubrew-packages`.
+2. Remove the metadata for the package. This can be done manually using:
+
+   ```nushell
+   kv drop -u -t nubrew_packages <package-name>
+   ```
+
+   Note that this command *may* return an error depending on your configuration. This is due to a non-critical bug in `std-rfc/kv`,
+   but the metadata should still be removed, which you can confirm using `kv list -u -t nubrew_packages`
+
+As with updates, `nubrew rm` is a likely future feature, assuming Nubrew gains traction.
 
 
 
