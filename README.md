@@ -1,4 +1,4 @@
-# nubrew
+# Nubrew
 
 Nubrew is an experimental package manager for Nushell modules and source files. It heavily relies on Git to install and update packages.
 
@@ -10,11 +10,17 @@ Nubrew is an experimental package manager for Nushell modules and source files. 
   but is planned to be extended to update modules via the appropriate `git update` and remove modules as well.
 - Automatically adds Nubrew-installed packages to the Nushell library path (`NU_LIB_DIRS`) at startup
 
+## Non-Goals
+
+- There is no support for installing or managing Nushell plugins.
+- There is no testing framework for Nushell modules/packages.
+
 ## Installation
 
-Nubrew can install itself, but to do so, you'll need a (probably temporary) copy of it. The following formula will install Nubrew and clean up the temporary directory:
+Nubrew can install itself, but to do so, you'll need a (probably temporary) copy of it. The following formula
+will install Nubrew and clean up the temporary directory:
 
-Due to the need for `use` to require a constant, you'll need to run the following in several distinct steps.
+Due to the `use` command's requirement for a constant path, you'll need to run the following in several distinct steps.
 
 First, paste and run the following:
 
@@ -27,16 +33,16 @@ cd $tempbrew
 Then paste and run the following:
 
 ```nushell
-use ./nubrew *
-nubrew install nubrew/nubrew
-nubrew init # Creates an autoload file which populates the NU_LIB_DIRS during startup
+use ./nubrew *                  # Import the temporary Nubrew
+nubrew install nubrew/nubrew    # Install the permanent Nubrew
+nubrew init                     # Creates an autoload file which populates the NU_LIB_DIRS during startup
 cd ~
-rm -r $tempbrew
+rm -r $tempbrew                 # Remove the temporary Nubrew
 ```
 
 ## Import Nubrew
 
-As with any module, Nubrew must be imported before use:
+As with any Nushell module, Nubrew must be imported before use:
 
 ```nushell
 use nubrew *
@@ -97,11 +103,12 @@ nubrew install nubrew/nubrew --branch <branch>
 
 ### Specifying a different module root
 
-Nushell modules can take the form `<directory>/mod.nu`, in which case the `<directory>` becomes the module name to be imported (`use`'d). It can be necessary to
-provide a different "root" (parent) in some cases.
+Nushell modules can take the form `<directory>/mod.nu`, in which case the `<directory>` becomes the module name
+to be imported (`use`'d). It can be necessary to provide a different "root" (parent) in some cases.
 
-For example, examine [this sample repo](https://github.com/nubrew/module-root-example) and note that the `mod.nu` is in the root directory of the repo. In this case, you can
-specify that the module should be imported directly from the Nubrew packages directory by using the `--module-root` flag:
+For example, examine [this sample repo](https://github.com/nubrew/module-root-example) and note that
+the `mod.nu` is in the root directory of the repo. In this case, you can specify that the module should
+be imported directly from the Nubrew packages directory by using the `--module-root` flag:
 
 ```nushell
 nubrew install nubrew/module-root-example --module-root='/'
@@ -130,9 +137,9 @@ For example, to install the same `themes` module and `nu-themes` as above:
 nubrew install nushell/nu_scripts 'nu_scripts-themes' --sparse-options [ '--no-cone', '--sparse-index', 'themes', '!screenshots' ] --module-root [ themes, themes/nu-themes ]
 ```
 
-The `--sparse-options` is used to include *only* the `themes` directory, but to *exclude* its screenshots subdirectory.
+The `--sparse-options` is used to include *only* the `themes` directory, but to *exclude* its `screenshots` subdirectory.
 
-The resulting package is a much more reasonable 4.6MB on your system.
+The resulting package is a much more reasonable 4.6MB on the local drive.
 
 You can refer to the Git documentation on sparse checkout for more options, but the above example will probably suffice for 
 most use-cases. Keep in mind that you can include and exclude multiple directories from a mono-repository, allowing your 
@@ -149,7 +156,7 @@ their corresponding arguments:
 * `branch`
 * `module-root`
 
-This allows a package author to define how their package should be installed by Nubrew. For instance:
+This allows a package author to pre-define how their package should be installed by Nubrew. For instance:
 
 ```nushell
 http get https://raw.github.com/nubrew/module-root-example/main/nubrew.nuon
