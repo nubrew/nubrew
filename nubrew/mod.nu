@@ -15,11 +15,11 @@ export def --env "nubrew install" [
   record -> nothing
 ] {
   # If a record is provided as input, use it as the package spec
-  let repo = $in.repo | default $repo
-  let package_name = $in.package_name | default $package_name
-  let sparse_options = $in.sparse-options | default $sparse_options
-  let branch = $in.branch | default $branch
-  let module_root = $in.module-root | default $module_root
+  let repo = $in.repo? | default $repo
+  let package_name = $in.package-name? | default $package_name
+  let sparse_options = $in.sparse-options? | default $sparse_options
+  let branch = $in.branch? | default $branch
+  let module_root = $in.module-root? | default $module_root
 
   # If not specified, we'll assume the package name is simply the last part of the path
   let assumed_package_name = ($repo | path parse | get stem)
