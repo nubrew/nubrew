@@ -10,7 +10,17 @@ export def --env "nubrew install" [
   --sparse-options:list = []
   --branch:string = "main"
   --module-root: oneof<list, string>          # The subdirectory within the nubrew packages directory that will be source'd or use'd. Defaults to the location of this package if not specified.
+]: [
+  nothing -> nothing
+  record -> nothing
 ] {
+  # If a record is provided as input, use it as the package spec
+  let repo = $in.repo | default $repo
+  let package_name = $in.package_name | default $package_name
+  let sparse_options = $in.sparse-options | default $sparse_options
+  let branch = $in.branch | default $branch
+  let module_root = $in.module-root | default $module_root
+
   # If not specified, we'll assume the package name is simply the last part of the path
   let assumed_package_name = ($repo | path parse | get stem)
   let $package_name = (
@@ -18,16 +28,15 @@ export def --env "nubrew install" [
     | default $assumed_package_name
   )
 
-  # Packages are installed into a directory named after the package, inside the Nubrew default package directory
+  # Packages are installed into a directory named after the package, inside 
+  # ($nu.data-dir)/nubrew-packages
   let package_dir = [ $default_package_dir, $package_name ] | path join
 
-  # There are currently three forms that the positional parameter can take:
+  # There are currently two forms that the repo argument can take:
   # 1. "nubrew/nubrew":  Use a GitHub repo
   # 2. "https://github.com/nubrew/nubrew": Specify the absolute repo
-  # 3. "https://example.com/path/to/spec.nuon": A nuon with a record providing the correct parameters
-  #
-  # The third is not yet implemented
-  #
+
+  # This may need tweaking if dealing with non-GitHub repositories
   let repo = if ($repo | str starts-with "https://") or ($repo | str starts-with "git@github.com:") {
     $repo
   } else {
@@ -47,9 +56,9 @@ export def --env "nubrew install" [
   # Add modules to the NU_LIB_DIRS for easy access
 
   # If a string was provided (a single module root), then turn it into a list; otherwise keep it a list
-  let module_root = ($module_root | into list)
+  let module_root = $module_root | into list
 
-  # Expand each item in the list to a fully-qualified path to be added to NU_LIB_DIRS (after install)
+  # Expand each item in the list to a fully-qualified path to be added to NU_LIB_DIRS
   let module_root_expanded = (
     $module_root | each {|mr|
       match $mr {
