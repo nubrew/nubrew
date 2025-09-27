@@ -5,7 +5,7 @@ const nubrew_db = ($nu.data-dir)/nubrew.sqlite3
 const default_package_dir = ($nu.data-dir)/nubrew-packages
 
 export def --env "nubrew install" [
-  repo:string
+  repo?:string
   package_name?:string
   --sparse-options:list = []
   --branch:string = "main"
