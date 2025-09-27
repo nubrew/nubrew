@@ -117,7 +117,7 @@ nubrew install nushell/nu-scripts --module-root [ themes, themes/nu-themes ]
 
 This would make both the theme *module* importable using `use themes`, but it would also add the themes themselves to the library path so you could, for example, `source 3024-day.nu` to load a theme directly.
 
-### Sparse options
+### Sparse Options
 
 But installing the entire `nu_scripts` repo takes a lot of space, and it even includes screenshots of the theme previews. A minimum of around 200MB is required in a normal Git clone, even with `--depth 1`.
 
@@ -138,12 +138,32 @@ You can refer to the Git documentation on sparse checkout for more options, but 
 most use-cases. Keep in mind that you can include and exclude multiple directories from a mono-repository, allowing your 
 package to install multiple modules at one time.
 
-### Updating packages
+### Package Specification Records/Files
+
+Nubrew accepts a record as pipeline input. This record contains the following keys that take the place of
+their corresponding arguments:
+
+* `repo`
+* `package-name`
+* `sparse-options`
+* `branch`
+* `module-root`
+
+This allows a package author to define how their package should be installed by Nubrew. For instance:
+
+```nushell
+http get https://raw.github.com/nubrew/module-root-example/main/nubrew.nuon
+| nubrew install
+```
+
+All arguments will be read from the `nubrew.nuon` in the repository.
+
+### Updating Packages
 
 In theory, a simple `git pull` inside the package directory will update to the latest and greatest. As a future feature,
 `nubrew update <package>` may run this automatically.
 
-### Removing packages
+### Removing Packages
 
 1. Delete the package directory found under `($nu.data-dir)/nubrew-packages`.
 2. Remove the metadata for the package. This can be done manually using:
@@ -156,6 +176,4 @@ In theory, a simple `git pull` inside the package directory will update to the l
    but the metadata should still be removed, which you can confirm using `kv list -u -t nubrew_packages`
 
 As with updates, `nubrew rm` is a likely future feature, assuming Nubrew gains traction.
-
-
 
